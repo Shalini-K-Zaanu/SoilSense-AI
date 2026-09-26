@@ -3,7 +3,8 @@ import joblib
 import pandas as pd
 import sqlite3
 from datetime import datetime
-
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
 app = Flask(__name__)
 
 # Secret key for login sessions
@@ -69,13 +70,34 @@ create_database()
 model = joblib.load("soil_model.pkl")
 crop_model = joblib.load("crop_model.pkl")
 
-data = joblib.load("data.pkl")
-
-preprocessor = data["preprocessor"]
-
 df = pd.read_csv("Crop_recommendationV2.csv")
 
 TARGET_COLUMNS = ["N", "P", "K"]
+
+# Create the same preprocessor used during model training
+X = df.drop(columns=TARGET_COLUMNS)
+
+categorical_columns = X.select_dtypes(
+    include=["object", "category"]
+).columns.tolist()
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        (
+            "categorical",
+            OneHotEncoder(
+                handle_unknown="ignore",
+                sparse_output=False
+            ),
+            categorical_columns
+        )
+    ],
+    remainder="passthrough"
+)
+
+# Fit preprocessor using the same dataset
+preprocessor.fit(X)
+
 
 
 # -----------------------------------
