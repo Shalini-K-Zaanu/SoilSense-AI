@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account | SoilSense AI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: linear-gradient(
+                135deg,
+                #e8f5e9,
+                #f5fff6
+            );
+
+            color: #183b25;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 450px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            color: #125c32;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #637667;
+            font-size: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 32px;
+            border-radius: 24px;
+
+            box-shadow:
+                0 10px 35px
+                rgba(30, 90, 50, 0.12);
+        }
+
+        .card h2 {
+            text-align: center;
+            color: #205c37;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            color: #315b40;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+
+            border: 1px solid #d4e5d8;
+            border-radius: 12px;
+
+            font-size: 15px;
+            outline: none;
+            background: #fbfffc;
+        }
+
+        .input-group input:focus {
+            border-color: #2c9b58;
+
+            box-shadow:
+                0 0 8px
+                rgba(44, 155, 88, 0.15);
+        }
+
+        .create-btn {
+            width: 100%;
+            padding: 15px;
+
+            border: none;
+            border-radius: 12px;
+
+            background: linear-gradient(
+                90deg,
+                #15783d,
+                #35a85c
+            );
+
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .create-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+
+            color: #637667;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #15783d;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .error {
+            margin-bottom: 15px;
+            padding: 12px;
+
+            background: #ffe9e9;
+            color: #a12626;
+
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+
+            <h1>SoilSense AI 🌱</h1>
+
+            <p>
+                Smart soil analysis for better farming.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Create Account</h2>
+
+            {% if error %}
+                <div class="error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+
+                <div class="input-group">
+
+                    <label>👤 Farmer Name</label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Enter your name"
+                        required>
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>📧 Email</label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        required>
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>🔒 Password</label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Create a password"
+                        required>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="create-btn">
+
+                    Create Account →
+
+                </button>
+
+            </form>
+
+            <div class="login-link">
+
+                Already have an account?
+
+                <a href="/login">
+                    Login
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

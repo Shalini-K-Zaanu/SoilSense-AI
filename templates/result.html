@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Soil Analysis Result | SoilSense AI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f4f8f3;
+            padding: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: #236b3b;
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #777;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #236b3b;
+            margin-bottom: 22px;
+        }
+
+        .nutrients {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .nutrient {
+            padding: 25px 15px;
+            background: #f4fbf5;
+            border: 1px solid #d5ead9;
+            border-radius: 18px;
+            text-align: center;
+        }
+
+        .emoji {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .nutrient h3 {
+            color: #315b40;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #236b3b;
+            margin-bottom: 12px;
+        }
+
+        .unit {
+            font-size: 15px;
+            font-weight: normal;
+            color: #657467;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .low {
+            background: #ffe5e5;
+            color: #c62828;
+        }
+
+        .medium {
+            background: #fff3cd;
+            color: #946200;
+        }
+
+        .high {
+            background: #dcf5e3;
+            color: #19743a;
+        }
+
+        .description {
+            color: #6c806f;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .suggestion {
+            background: #fff9e6;
+            border-left: 4px solid #e6b84a;
+            padding: 12px;
+            border-radius: 10px;
+            color: #795548;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .crop {
+            text-align: center;
+            padding: 28px;
+            background: #e8f5e9;
+            border: 1px solid #c9e8d0;
+            border-radius: 18px;
+        }
+
+        .crop-icon {
+            font-size: 45px;
+            margin-bottom: 10px;
+        }
+
+        .crop h3 {
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .crop-name {
+            font-size: 30px;
+            font-weight: bold;
+            color: #236b3b;
+            margin-bottom: 10px;
+        }
+
+        .crop-text {
+            color: #637667;
+            font-size: 14px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 17px;
+            margin-bottom: 12px;
+        }
+
+        .new {
+            background: linear-gradient(90deg, #15783d, #35a85c);
+            color: white;
+        }
+
+        .dashboard {
+            background: #e8f5e9;
+            color: #236b3b;
+            border: 1px solid #c9e8d0;
+        }
+
+
+        /* ============================= */
+        /* RESULT ANIMATION */
+        /* ============================= */
+
+        .nutrient-card {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: nutrientReveal 0.7s ease forwards;
+        }
+
+        .nutrient-card:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .nutrient-card:nth-child(2) {
+            animation-delay: 1.2s;
+        }
+
+        .nutrient-card:nth-child(3) {
+            animation-delay: 2.2s;
+        }
+
+        @keyframes nutrientReveal {
+
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* ============================= */
+        /* RECOMMENDED CROP ANIMATION */
+        /* ============================= */
+
+        .recommendation {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: recommendationReveal 0.7s ease forwards;
+            animation-delay: 3.2s;
+        }
+
+        @keyframes recommendationReveal {
+
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* ============================= */
+        /* MOBILE */
+        /* ============================= */
+
+        @media (max-width: 700px) {
+
+            .nutrients {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>🌱 Soil Analysis Result</h1>
+
+        <p>SoilSense AI</p>
+
+    </div>
+
+
+    <!-- NPK RESULTS -->
+
+    <div class="card">
+
+        <h2>Predicted Nutrient Levels</h2>
+
+        <div class="nutrients">
+
+
+            <!-- NITROGEN -->
+
+            <div class="nutrient nutrient-card">
+
+                <div class="emoji">🌿</div>
+
+                <h3>Nitrogen (N)</h3>
+
+                <div class="value">
+
+                    {{ nitrogen }}
+
+                    <span class="unit">
+                        mg/kg
+                    </span>
+
+                </div>
+
+                <div class="status
+                    {% if nitrogen < 40 %}
+                        low
+                    {% elif nitrogen <= 80 %}
+                        medium
+                    {% else %}
+                        high
+                    {% endif %}
+                ">
+
+                    {% if nitrogen < 40 %}
+
+                        ⚠️ Low
+
+                    {% elif nitrogen <= 80 %}
+
+                        🌱 Medium
+
+                    {% else %}
+
+                        ✅ High
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="suggestion">
+
+                    💡
+
+                    {% if nitrogen < 40 %}
+
+                        Apply nitrogen-rich fertilizer
+                        to improve nitrogen availability.
+
+                    {% elif nitrogen <= 80 %}
+
+                        Monitor nitrogen levels to maintain
+                        healthy plant growth.
+
+                    {% else %}
+
+                        Reduce nitrogen application and
+                        monitor soil nutrient balance.
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- PHOSPHORUS -->
+
+            <div class="nutrient nutrient-card">
+
+                <div class="emoji">🌱</div>
+
+                <h3>Phosphorus (P)</h3>
+
+                <div class="value">
+
+                    {{ phosphorus }}
+
+                    <span class="unit">
+                        mg/kg
+                    </span>
+
+                </div>
+
+                <div class="status
+                    {% if phosphorus < 20 %}
+                        low
+                    {% elif phosphorus <= 50 %}
+                        medium
+                    {% else %}
+                        high
+                    {% endif %}
+                ">
+
+                    {% if phosphorus < 20 %}
+
+                        ⚠️ Low
+
+                    {% elif phosphorus <= 50 %}
+
+                        🌱 Medium
+
+                    {% else %}
+
+                        ✅ High
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="suggestion">
+
+                    💡
+
+                    {% if phosphorus < 20 %}
+
+                        Apply phosphorus-rich fertilizer
+                        to support root development.
+
+                    {% elif phosphorus <= 50 %}
+
+                        Monitor phosphorus levels to maintain
+                        healthy root growth.
+
+                    {% else %}
+
+                        Reduce phosphorus application and
+                        monitor soil nutrient balance.
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- POTASSIUM -->
+
+            <div class="nutrient nutrient-card">
+
+                <div class="emoji">🍃</div>
+
+                <h3>Potassium (K)</h3>
+
+                <div class="value">
+
+                    {{ potassium }}
+
+                    <span class="unit">
+                        mg/kg
+                    </span>
+
+                </div>
+
+                <div class="status
+                    {% if potassium < 100 %}
+                        low
+                    {% elif potassium <= 200 %}
+                        medium
+                    {% else %}
+                        high
+                    {% endif %}
+                ">
+
+                    {% if potassium < 100 %}
+
+                        ⚠️ Low
+
+                    {% elif potassium <= 200 %}
+
+                        🌱 Medium
+
+                    {% else %}
+
+                        ✅ High
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="suggestion">
+
+                    💡
+
+                    {% if potassium < 100 %}
+
+                        Apply potassium-rich fertilizer
+                        to improve plant strength.
+
+                    {% elif potassium <= 200 %}
+
+                        Monitor potassium levels to maintain
+                        healthy plant growth.
+
+                    {% else %}
+
+                        Reduce potassium application and
+                        monitor soil nutrient balance.
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- RECOMMENDED CROP -->
+
+    <div class="card recommendation">
+
+        <h2>🌾 Recommended Crop</h2>
+
+        <div class="crop">
+
+            <div class="crop-icon">
+                🌾
+            </div>
+
+            <div class="crop-name">
+
+                {{ recommended_crop | title() }}
+
+            </div>
+
+            <div class="crop-text">
+
+                Recommended based on the predicted
+                Nitrogen, Phosphorus, and Potassium levels.
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- BUTTONS -->
+
+    <div class="buttons">
+
+        <a href="/soil-input" class="btn new">
+            🌱 New Analysis →
+        </a>
+
+        <a href="/dashboard" class="btn dashboard">
+            ← Dashboard
+        </a>
+
+    </div>
+
+
+</div>
+
+</body>
+
+</html>
