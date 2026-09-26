@@ -73,7 +73,7 @@ data = joblib.load("data.pkl")
 
 preprocessor = data["preprocessor"]
 
-df = pd.read_csv("crop_recommendationV2.csv")
+df = pd.read_csv("Crop_recommendationV2.csv")
 
 TARGET_COLUMNS = ["N", "P", "K"]
 
@@ -444,6 +444,15 @@ def dashboard():
             font-weight: bold;
 
             margin-bottom: 25px;
+        }
+
+        .new-analysis {
+            transition: all 0.4s ease;
+        }
+
+        .new-analysis:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(21, 120, 61, 0.25);
         }
 
 
