@@ -1,10 +1,13 @@
 from flask import Flask, request, render_template_string, render_template, redirect, url_for, session
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import joblib
 import pandas as pd
-import sqlite3
 from datetime import datetime
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
+
 app = Flask(__name__)
 
 # Secret key for login sessions
@@ -16,9 +19,10 @@ app.secret_key = "soilsense_secret_key_2026"
 # -----------------------------------
 
 def get_db():
-    conn = sqlite3.connect("soilsense.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+    return psycopg2.connect(
+        os.environ["DATABASE_URL"],
+        cursor_factory=RealDictCursor
+    )
 
 
 # -----------------------------------
@@ -28,19 +32,20 @@ def get_db():
 def create_database():
 
     conn = get_db()
+    cur = conn.cursor()
 
-    conn.execute("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL
         )
     """)
 
-    conn.execute("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS soil_analysis (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL,
             date TEXT NOT NULL,
             temperature REAL,
@@ -57,6 +62,8 @@ def create_database():
     """)
 
     conn.commit()
+
+    cur.close()
     conn.close()
 
 
@@ -74,7 +81,11 @@ df = pd.read_csv("Crop_recommendationV2.csv")
 
 TARGET_COLUMNS = ["N", "P", "K"]
 
-# Create the same preprocessor used during model training
+
+# -----------------------------------
+# CREATE PREPROCESSOR
+# -----------------------------------
+
 X = df.drop(columns=TARGET_COLUMNS)
 
 categorical_columns = X.select_dtypes(
@@ -95,9 +106,7 @@ preprocessor = ColumnTransformer(
     remainder="passthrough"
 )
 
-# Fit preprocessor using the same dataset
 preprocessor.fit(X)
-
 
 
 # -----------------------------------
@@ -174,24 +183,30 @@ def register():
         password = request.form["password"]
 
         conn = get_db()
+        cur = conn.cursor()
 
         try:
 
-            conn.execute(
+            cur.execute(
                 """
                 INSERT INTO users (name, email, password)
-                VALUES (?, ?, ?)
+                VALUES (%s, %s, %s)
                 """,
                 (name, email, password)
             )
 
             conn.commit()
+
+            cur.close()
             conn.close()
 
             return redirect(url_for("login"))
 
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
 
+            conn.rollback()
+
+            cur.close()
             conn.close()
 
             error = "An account with this email already exists."
@@ -217,15 +232,20 @@ def login():
         password = request.form["password"]
 
         conn = get_db()
+        cur = conn.cursor()
 
-        user = conn.execute(
+        cur.execute(
             """
-            SELECT * FROM users
-            WHERE email = ? AND password = ?
+            SELECT *
+            FROM users
+            WHERE email = %s AND password = %s
             """,
             (email, password)
-        ).fetchone()
+        )
 
+        user = cur.fetchone()
+
+        cur.close()
         conn.close()
 
         if user:
@@ -253,20 +273,25 @@ def login():
 def dashboard():
 
     if "user_id" not in session:
+
         return redirect(url_for("login"))
 
     conn = get_db()
+    cur = conn.cursor()
 
-    analyses = conn.execute(
+    cur.execute(
         """
         SELECT *
         FROM soil_analysis
-        WHERE user_id = ?
+        WHERE user_id = %s
         ORDER BY id DESC
         """,
         (session["user_id"],)
-    ).fetchall()
+    )
 
+    analyses = cur.fetchall()
+
+    cur.close()
     conn.close()
 
     return render_template_string("""
@@ -311,9 +336,6 @@ def dashboard():
 
             margin: 40px auto;
         }
-
-
-        /* HEADER */
 
         .header {
 
@@ -408,9 +430,6 @@ def dashboard():
             white-space: nowrap;
         }
 
-
-        /* WELCOME */
-
         .welcome {
 
             background: white;
@@ -424,6 +443,8 @@ def dashboard():
                 rgba(30, 90, 50, 0.10);
 
             margin-bottom: 25px;
+
+            animation: dashboardReveal 0.7s ease forwards;
         }
 
         .welcome h2 {
@@ -437,9 +458,6 @@ def dashboard():
 
             color: #637667;
         }
-
-
-        /* NEW ANALYSIS */
 
         .new-analysis {
 
@@ -466,19 +484,22 @@ def dashboard():
             font-weight: bold;
 
             margin-bottom: 25px;
-        }
 
-        .new-analysis {
+            animation: dashboardReveal 0.7s ease forwards;
+
+            animation-delay: 0.2s;
+
             transition: all 0.4s ease;
         }
 
         .new-analysis:hover {
+
             transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 10px 25px rgba(21, 120, 61, 0.25);
+
+            box-shadow:
+                0 10px 25px
+                rgba(21, 120, 61, 0.25);
         }
-
-
-        /* HISTORY */
 
         .history {
 
@@ -491,6 +512,10 @@ def dashboard():
             box-shadow:
                 0 10px 35px
                 rgba(30, 90, 50, 0.10);
+
+            animation: dashboardReveal 0.7s ease forwards;
+
+            animation-delay: 0.4s;
         }
 
         .history h2 {
@@ -569,26 +594,22 @@ def dashboard():
             padding: 30px;
         }
 
+        @keyframes dashboardReveal {
 
-        /* MOBILE */
+            from {
 
-        @media (max-width: 600px) {
+                opacity: 0;
 
-            .header {
-
-                flex-direction: column;
-
-                gap: 20px;
+                transform: translateY(25px);
             }
 
-            .logout {
+            to {
 
-                align-self: flex-end;
+                opacity: 1;
+
+                transform: translateY(0);
             }
         }
-
-
-        /* PAGE NAVIGATION ANIMATION */
 
         body {
 
@@ -612,9 +633,6 @@ def dashboard():
             }
         }
 
-
-        /* BUTTON CLICK EFFECT */
-
         button,
         .btn,
         a {
@@ -629,6 +647,21 @@ def dashboard():
             transform: translateY(-2px);
         }
 
+        @media (max-width: 600px) {
+
+            .header {
+
+                flex-direction: column;
+
+                gap: 20px;
+            }
+
+            .logout {
+
+                align-self: flex-end;
+            }
+        }
+
     </style>
 
 </head>
@@ -637,9 +670,6 @@ def dashboard():
 <body>
 
     <div class="container">
-
-
-        <!-- HEADER -->
 
         <div class="header">
 
@@ -657,15 +687,12 @@ def dashboard():
 
             </div>
 
-
             <a href="/logout" class="logout">
                 Logout
             </a>
 
         </div>
 
-
-        <!-- WELCOME -->
 
         <div class="welcome">
 
@@ -680,8 +707,6 @@ def dashboard():
         </div>
 
 
-        <!-- NEW ANALYSIS -->
-
         <a href="/soil-input" class="new-analysis">
 
             🌱 Start New Soil Analysis →
@@ -689,12 +714,9 @@ def dashboard():
         </a>
 
 
-        <!-- HISTORY -->
-
         <div class="history">
 
             <h2>📊 Previous Analyses</h2>
-
 
             {% if analyses %}
 
@@ -708,7 +730,6 @@ def dashboard():
 
                         </div>
 
-
                         <div class="analysis-values">
 
                             <div class="value">
@@ -719,7 +740,6 @@ def dashboard():
 
                             </div>
 
-
                             <div class="value">
 
                                 🌱 P:
@@ -727,7 +747,6 @@ def dashboard():
                                 mg/kg
 
                             </div>
-
 
                             <div class="value">
 
@@ -738,7 +757,6 @@ def dashboard():
                             </div>
 
                         </div>
-
 
                         <div class="crop">
 
@@ -940,8 +958,9 @@ def soil_input():
             # SAVE ANALYSIS
 
             conn = get_db()
+            cur = conn.cursor()
 
-            conn.execute(
+            cur.execute(
                 """
                 INSERT INTO soil_analysis (
                     user_id,
@@ -957,7 +976,10 @@ def soil_input():
                     potassium,
                     recommended_crop
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (
+                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s
+                )
                 """,
                 (
                     session["user_id"],
@@ -989,6 +1011,8 @@ def soil_input():
             )
 
             conn.commit()
+
+            cur.close()
             conn.close()
 
 
