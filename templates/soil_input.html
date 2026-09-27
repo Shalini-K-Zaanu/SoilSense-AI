@@ -208,8 +208,11 @@
 
                 <input
                     type="number"
-                    step="any"
+                    step="0.1"
+                    min="10"
+                    max="60"
                     name="temperature"
+                    placeholder="Enter temperature (10–60°C)"
                     required
                 >
 
@@ -226,8 +229,11 @@
 
                 <input
                     type="number"
-                    step="any"
+                    step="0.1"
+                    min="0"
+                    max="100"
                     name="humidity"
+                    placeholder="Enter humidity (0–100%)"
                     required
                 >
 
@@ -244,8 +250,11 @@
 
                 <input
                     type="number"
-                    step="any"
+                    step="0.1"
+                    min="3"
+                    max="10"
                     name="ph"
+                    placeholder="Enter soil pH (3–10)"
                     required
                 >
 
@@ -262,8 +271,11 @@
 
                 <input
                     type="number"
-                    step="any"
+                    step="0.1"
+                    min="0"
+                    max="100"
                     name="soil_moisture"
+                    placeholder="Enter soil moisture (0–100%)"
                     required
                 >
 
@@ -280,8 +292,11 @@
 
                 <input
                     type="number"
-                    step="any"
+                    step="0.1"
+                    min="0"
+                    max="10"
                     name="organic_matter"
+                    placeholder="Enter organic matter (0–10%)"
                     required
                 >
 
@@ -298,21 +313,35 @@
 
                 <select name="soil_type" required>
 
-                    <option value="">Select Soil Type</option>
+                    <option value="">
+                        Select Soil Type
+                    </option>
 
-                    <option value="1">Alluvial</option>
+                    <option value="1">
+                        Alluvial
+                    </option>
 
-                    <option value="2">Black</option>
+                    <option value="2">
+                        Black
+                    </option>
 
-                    <option value="3">Clay</option>
+                    <option value="3">
+                        Clay
+                    </option>
 
-                    <option value="1">Loamy</option>
+                    <option value="1">
+                        Loamy
+                    </option>
 
-                    <option value="2">Red</option>
+                    <option value="2">
+                        Red
+                    </option>
 
-                    <option value="3">Sandy</option>
+                    <option value="3">
+                        Sandy
+                    </option>
 
-            </select>
+                </select>
 
             </div>
 
