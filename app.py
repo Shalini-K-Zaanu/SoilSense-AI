@@ -962,19 +962,26 @@ def soil_input():
             # CROP RECOMMENDATION
             # -----------------------------------
 
+            crop_input = sample.drop(
+                columns=["N", "P", "K", "label"]
+            ).copy()
+
+            crop_input["N"] = nitrogen
+            crop_input["P"] = phosphorus
+            crop_input["K"] = potassium
+
+            # Arrange columns exactly as used during training
+            crop_input = crop_input[df.drop(columns=["label"]).columns]
+
             recommended_crop = crop_model.predict(
-                [[
-                    nitrogen,
-                    phosphorus,
-                    potassium
-                ]]
+                crop_input
             )[0]
 
             recommended_crop = str(
                 recommended_crop
             )
 
-
+            
             # -----------------------------------
             # TERMINAL OUTPUT
             # -----------------------------------
