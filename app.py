@@ -809,7 +809,9 @@ def soil_input():
 
         try:
 
+            # -----------------------------------
             # GET USER INPUT
+            # -----------------------------------
 
             user_values = {
 
@@ -833,17 +835,37 @@ def soil_input():
                     request.form["organic_matter"]
                 ),
 
-                "soil_type": request.form["soil_type"]
+                "soil_type": request.form["soil_type"],
+
+                # IMPORTANT:
+                # N, P and K are now taken
+                # directly from the user.
+
+                "nitrogen": float(
+                    request.form["nitrogen"]
+                ),
+
+                "phosphorus": float(
+                    request.form["phosphorus"]
+                ),
+
+                "potassium": float(
+                    request.form["potassium"]
+                )
 
             }
 
 
+            # -----------------------------------
             # TAKE ONE EXISTING ROW AS BASE
+            # -----------------------------------
 
             sample = df.iloc[[0]].copy()
 
 
+            # -----------------------------------
             # SOIL TYPE MAPPING
+            # -----------------------------------
 
             soil_mapping = {
 
@@ -853,12 +875,32 @@ def soil_input():
                 "Loamy": 3,
                 "Red": 4,
                 "Sandy": 5
+
             }
 
 
-            # REPLACE USER VALUES
+            # -----------------------------------
+            # REPLACE SOIL MODEL INPUT VALUES
+            # -----------------------------------
 
-            for column, value in user_values.items():
+            soil_model_values = {
+
+                "temperature": user_values["temperature"],
+
+                "humidity": user_values["humidity"],
+
+                "ph": user_values["ph"],
+
+                "soil_moisture": user_values["soil_moisture"],
+
+                "organic_matter": user_values["organic_matter"],
+
+                "soil_type": user_values["soil_type"]
+
+            }
+
+
+            for column, value in soil_model_values.items():
 
                 if column in sample.columns:
 
@@ -866,23 +908,16 @@ def soil_input():
                         df[column]
                     ):
 
-                        if column == "soil_type":
-
-                            sample[column] = soil_mapping.get(
-                                value,
-                                0
-                            )
-
-                        else:
-
-                            sample[column] = float(value)
+                        sample[column] = float(value)
 
                     else:
 
                         sample[column] = str(value)
 
 
+            # -----------------------------------
             # REMOVE N P K
+            # -----------------------------------
 
             input_data = sample.drop(
                 columns=TARGET_COLUMNS,
@@ -890,36 +925,54 @@ def soil_input():
             )
 
 
+            # -----------------------------------
             # APPLY PREPROCESSOR
+            # -----------------------------------
 
             transformed_data = preprocessor.transform(
                 input_data
             )
 
 
-            # PREDICT N P K
+            # -----------------------------------
+            # PREDICT SOIL N P K
+            # -----------------------------------
 
             prediction = model.predict(
                 transformed_data
             )[0]
 
-            nitrogen = round(
+
+            predicted_nitrogen = round(
                 float(prediction[0]),
                 2
             )
 
-            phosphorus = round(
+            predicted_phosphorus = round(
                 float(prediction[1]),
                 2
             )
 
-            potassium = round(
+            predicted_potassium = round(
                 float(prediction[2]),
                 2
             )
 
 
+            # -----------------------------------
+            # USER ENTERED N P K
+            # -----------------------------------
+
+            nitrogen = user_values["nitrogen"]
+
+            phosphorus = user_values["phosphorus"]
+
+            potassium = user_values["potassium"]
+
+
+            # -----------------------------------
             # CROP RECOMMENDATION
+            # -----------------------------------
 
             recommended_crop = crop_model.predict(
                 [[
@@ -934,14 +987,25 @@ def soil_input():
             )
 
 
+            # -----------------------------------
             # TERMINAL OUTPUT
+            # -----------------------------------
 
             print("--------------------------------")
+
             print("USER INPUT:")
+
             print(user_values)
 
             print(
-                "NPK:",
+                "SOIL MODEL PREDICTED NPK:",
+                predicted_nitrogen,
+                predicted_phosphorus,
+                predicted_potassium
+            )
+
+            print(
+                "USER ENTERED NPK:",
                 nitrogen,
                 phosphorus,
                 potassium
@@ -955,7 +1019,9 @@ def soil_input():
             print("--------------------------------")
 
 
+            # -----------------------------------
             # SAVE ANALYSIS
+            # -----------------------------------
 
             conn = get_db()
             cur = conn.cursor()
@@ -1016,7 +1082,9 @@ def soil_input():
             conn.close()
 
 
+            # -----------------------------------
             # SHOW RESULT PAGE
+            # -----------------------------------
 
             return render_template(
                 "result.html",
