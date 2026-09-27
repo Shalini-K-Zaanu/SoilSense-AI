@@ -945,8 +945,8 @@ def soil_input():
                 float(prediction[2]),
                 2
             )
-
-
+            
+            print("PREDICTED NPK:", predicted_nitrogen, predicted_phosphorus, predicted_potassium)
             # -----------------------------------
             # USE PREDICTED N P K
             # -----------------------------------
